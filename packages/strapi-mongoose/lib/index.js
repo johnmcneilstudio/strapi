@@ -56,13 +56,13 @@ module.exports = function (strapi) {
           connectOptions.authSource = authenticationDatabase;
         }
         connectOptions.ssl = ssl ? true : false;
-
+        console.log(connectOptions, ssl)
         instance.connect(uri || `mongodb://${host}:${port}/${database}`, connectOptions);
 
         // Handle error
         instance.connection.on('error', error => {
           if (error.message.indexOf(`:${port}`)) {
-            return cb('Make sure your MongoDB database is running...');
+            return cb('Make sure your MongoDB database is running...' + error.message ) ;
           }
 
           cb(error);
