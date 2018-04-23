@@ -55,14 +55,14 @@ module.exports = function (strapi) {
         if (!_.isEmpty(authenticationDatabase)) {
           connectOptions.authSource = authenticationDatabase;
         }
-        connectOptions.ssl = ssl ? true : false;
-        console.log(connectOptions, ssl)
+        connectOptions.ssl = ssl === true || ssl === 'true';
+
         instance.connect(uri || `mongodb://${host}:${port}/${database}`, connectOptions);
 
         // Handle error
         instance.connection.on('error', error => {
           if (error.message.indexOf(`:${port}`)) {
-            return cb('Make sure your MongoDB database is running...' + error.message ) ;
+            return cb('Make sure your MongoDB database is running...');
           }
 
           cb(error);
@@ -176,13 +176,13 @@ module.exports = function (strapi) {
                             case 'oneMorphToOne':
                               returned[association.alias] = returned[association.alias][0].ref;
                               break;
+                            case 'manyMorphToMany':
                             case 'manyMorphToOne':
                               returned[association.alias] = returned[association.alias].map(obj => obj.ref);
                               break;
                             default:
 
                           }
-
                         }
                       });
                     }
@@ -462,6 +462,14 @@ module.exports = function (strapi) {
         case '_limit':
           result.key = `limit`;
           result.value = parseFloat(value);
+          break;
+        case '_contains':
+          result.key = `where.${key}`;
+          result.value = new RegExp('\\b' + value + '\\b', 'i');
+          break;
+        case '_containss':
+          result.key = `where.${key}.$regex`;
+          result.value = value;
           break;
         default:
           result = undefined;
